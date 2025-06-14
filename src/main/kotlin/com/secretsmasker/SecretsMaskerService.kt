@@ -68,7 +68,7 @@ class SecretsMaskerService {
                     logger.warn("Found sensitive data: '$matchedText' at [$highlightStart, $highlightEnd]")
 
 //                    editor.colorsScheme.defaultBackground
-                    var color = Color(180, 180, 180)
+                    var color = Color(settings.highlightColor)
 
                     if (settings.invisibleHighlight){
                         color = editor.colorsScheme.defaultBackground

@@ -8,8 +8,11 @@ import com.intellij.util.xmlb.XmlSerializerUtil
     storages = [Storage("SecretsMaskerSettings.xml")]
 )
 class SecretsMaskerSettings : PersistentStateComponent<SecretsMaskerSettings> {
+
     var patterns: MutableList<String> = mutableListOf("API_KEY.*", "SECRET.*", "PASSWORD.*")
     var hideOnlyValues: Boolean = false
+    var invisibleHighlight: Boolean = false
+
 
     override fun getState(): SecretsMaskerSettings = this
 

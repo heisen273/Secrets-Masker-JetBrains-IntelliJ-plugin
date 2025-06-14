@@ -67,9 +67,16 @@ class SecretsMaskerService {
                     val matchedText = text.substring(highlightStart, highlightEnd)
                     logger.warn("Found sensitive data: '$matchedText' at [$highlightStart, $highlightEnd]")
 
+//                    editor.colorsScheme.defaultBackground
+                    var color = Color(180, 180, 180)
+
+                    if (settings.invisibleHighlight){
+                        color = editor.colorsScheme.defaultBackground
+                    }
+
                     val attributes = TextAttributes().apply {
-                        backgroundColor = Color(180, 180, 180)
-                        foregroundColor = Color(180, 180, 180)
+                        backgroundColor = color
+                        foregroundColor = color
                     }
 
                     highlighter.addRangeHighlighter(

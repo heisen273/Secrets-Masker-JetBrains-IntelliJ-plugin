@@ -18,12 +18,15 @@ import java.util.EventObject
 
 
 class SecretsMaskerConfigurable : Configurable {
+
     private var mainPanel: JPanel? = null
     private var patternsTable: JTable? = null
     private var tableModel: DefaultTableModel? = null
     private val undoManager = CompoundUndoManager()
     private var originalCellValue = ""
+
     private var hideOnlyValuesCheckBox: JCheckBox? = null
+    private var invisibleHighlightCheckBox: JCheckBox? = null
 
     override fun getDisplayName(): String = "Secrets Masker"
 
@@ -43,13 +46,19 @@ class SecretsMaskerConfigurable : Configurable {
         val topPanel = JPanel(BorderLayout())
         topPanel.add(instructionLabel, BorderLayout.NORTH)
 
-        // Add checkbox for hiding only values
+        // Checkbox for hiding only values
         val settings = SecretsMaskerSettings.getInstance()
-        hideOnlyValuesCheckBox = JCheckBox("Hide only values after patterns (e.g., only hide the value after '=' or ':')", settings.hideOnlyValues)
-        hideOnlyValuesCheckBox!!.border = EmptyBorder(0, 0, 10, 0)
+        hideOnlyValuesCheckBox = JCheckBox("Hide only values after patterns (e.g., only hide the value after '=' or ':')",
+            settings.hideOnlyValues)
         topPanel.add(hideOnlyValuesCheckBox, BorderLayout.CENTER)
 
+        // Checkbox for invisible highlight
+        invisibleHighlightCheckBox = JCheckBox("Invisible highlight",
+            settings.invisibleHighlight)
+        topPanel.add(invisibleHighlightCheckBox, BorderLayout.AFTER_LAST_LINE)
+
         mainPanel!!.add(topPanel, BorderLayout.NORTH)
+
 
         tableModel = object : DefaultTableModel(arrayOf("Regular Expression Patterns"), 0) {
             override fun isCellEditable(row: Int, column: Int): Boolean = true
@@ -198,7 +207,11 @@ class SecretsMaskerConfigurable : Configurable {
         val settings = SecretsMaskerSettings.getInstance()
         val currentPatterns = (0 until tableModel!!.rowCount).map { tableModel!!.getValueAt(it, 0).toString().trim() }.filter { it.isNotEmpty() }
         val hideValueSettingChanged = hideOnlyValuesCheckBox?.isSelected != settings.hideOnlyValues
-        return settings.patterns != currentPatterns || hideValueSettingChanged
+        val invisibleChanged = invisibleHighlightCheckBox?.isSelected != settings.invisibleHighlight
+
+        return settings.patterns != currentPatterns ||
+                hideValueSettingChanged ||
+                invisibleChanged
     }
 
     override fun apply() {
@@ -207,9 +220,12 @@ class SecretsMaskerConfigurable : Configurable {
         (0 until tableModel!!.rowCount).map {
             tableModel!!.getValueAt(it, 0).toString().trim() }.filter { it.isNotEmpty() }.forEach { settings.patterns.add(it) }
 
-        // Save the checkbox setting
+        // Save the checkbox settings
         hideOnlyValuesCheckBox?.let {
             settings.hideOnlyValues = it.isSelected
+        }
+        invisibleHighlightCheckBox?.let {
+            settings.invisibleHighlight = it.isSelected
         }
 
         // Use invokeLater to ensure UI thread compatibility without coroutines
@@ -229,11 +245,13 @@ class SecretsMaskerConfigurable : Configurable {
     }
 
     override fun reset() {
+        val settings = SecretsMaskerSettings.getInstance()
         tableModel!!.rowCount = 0
         SecretsMaskerSettings.getInstance().patterns.distinct().forEach { tableModel!!.addRow(arrayOf(it)) }
 
         // Reset the checkbox state
-        hideOnlyValuesCheckBox?.isSelected = SecretsMaskerSettings.getInstance().hideOnlyValues
+        hideOnlyValuesCheckBox?.isSelected = settings.hideOnlyValues
+        invisibleHighlightCheckBox?.isSelected = settings.invisibleHighlight
     }
 }
 

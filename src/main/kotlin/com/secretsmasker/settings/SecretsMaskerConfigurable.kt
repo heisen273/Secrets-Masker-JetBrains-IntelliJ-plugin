@@ -9,6 +9,9 @@ import java.awt.*
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 import javax.swing.event.CellEditorListener
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
+
 import javax.swing.event.ChangeEvent
 import javax.swing.table.DefaultTableModel
 import javax.swing.undo.*
@@ -28,45 +31,129 @@ class SecretsMaskerConfigurable : Configurable {
     private var hideOnlyValuesCheckBox: JCheckBox? = null
     private var invisibleHighlightCheckBox: JCheckBox? = null
 
+    private var colorPreviewPanel: JPanel? = null
+    private var colorModified: Boolean = false
+
     override fun getDisplayName(): String = "Secrets Masker"
 
     override fun createComponent(): JComponent {
         mainPanel = JPanel(BorderLayout(10, 10)).apply {
             border = EmptyBorder(10, 10, 10, 10)
         }
+        val currentSettings = SecretsMaskerSettings.getInstance()
 
+        // Create a vertical panel for all settings
+        val settingsPanel = JPanel()
+        settingsPanel.layout = BoxLayout(settingsPanel, BoxLayout.Y_AXIS)
+        settingsPanel.border = EmptyBorder(0, 0, 15, 0)
+
+        // Instructions
         val instructionLabel = JLabel(
             "<html><b>Configure patterns to match secrets</b><br>" +
                     "Each pattern is compiled as a regular expression.<br>" +
                     "Double-click to edit, press Enter to save, or Backspace to remove rows.</html>"
-        ).apply { border = EmptyBorder(0, 0, 10, 0) }
-        mainPanel!!.add(instructionLabel, BorderLayout.NORTH)
+        ).apply {
+            border = EmptyBorder(0, 0, 10, 0)
+            alignmentX = Component.LEFT_ALIGNMENT
+        }
+        settingsPanel.add(instructionLabel)
 
-        // Create a panel for the top section
-        val topPanel = JPanel(BorderLayout())
-        topPanel.add(instructionLabel, BorderLayout.NORTH)
+        // Pattern options panel
+        val checkboxOptions = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS) // <-- vertical layout
+            alignmentX = Component.LEFT_ALIGNMENT
+            border = EmptyBorder(0, 0, 10, 0)
+        }
 
-        // Checkbox for hiding only values
-        val settings = SecretsMaskerSettings.getInstance()
-        hideOnlyValuesCheckBox = JCheckBox("Hide only values after patterns (e.g., only hide the value after '=' or ':')",
-            settings.hideOnlyValues)
-        topPanel.add(hideOnlyValuesCheckBox, BorderLayout.CENTER)
+        hideOnlyValuesCheckBox = JCheckBox("Hide only values after patterns").apply {
+            toolTipText = "Only hide the value after '=' or ':'"
+            isSelected = currentSettings.hideOnlyValues
+        }
+        checkboxOptions.add(hideOnlyValuesCheckBox!!)
 
-        // Checkbox for invisible highlight
-        invisibleHighlightCheckBox = JCheckBox("Invisible highlight",
-            settings.invisibleHighlight)
-        topPanel.add(invisibleHighlightCheckBox, BorderLayout.AFTER_LAST_LINE)
+        invisibleHighlightCheckBox = JCheckBox("Invisible highlight").apply {
+            toolTipText = "Make highlighted text blend with background"
+            isSelected = currentSettings.invisibleHighlight
+        }
+        checkboxOptions.add(invisibleHighlightCheckBox!!)
 
-        mainPanel!!.add(topPanel, BorderLayout.NORTH)
+
+        settingsPanel.add(checkboxOptions)
+
+        // Appearance settings panel
+        val appearancePanel = JPanel(FlowLayout(FlowLayout.LEFT, 10, 0)).apply {
+            alignmentX = Component.LEFT_ALIGNMENT
+        }
+
+        // Color picker
+        appearancePanel.add(JLabel("Highlight Color:"))
+
+        val colorChooser = JColorChooser(Color(currentSettings.highlightColor))
+        // Remove all chooser panels except Swatches
+        val swatchesPanel = colorChooser.chooserPanels.first()
+        for (panel in colorChooser.chooserPanels) {
+            if (panel != swatchesPanel) {
+                colorChooser.removeChooserPanel(panel)
+            }
+        }
+        colorPreviewPanel = JPanel().apply {
+            background = Color(currentSettings.highlightColor)
+            preferredSize = Dimension(20, 20)
+            border = BorderFactory.createLineBorder(Color.GRAY)
+
+            addMouseListener(object : MouseListener {
+
+                override fun mouseClicked(e: MouseEvent?) {
+                    // Create and show dialog manually
+                    val dialog = JColorChooser.createDialog(
+                        mainPanel,
+                        "Select Highlight Color",
+                        true,
+                        colorChooser,
+                        {
+                            val selectedColor = colorChooser.color
+                            colorPreviewPanel!!.background = selectedColor
+                            currentSettings.highlightColor = selectedColor.rgb
+                            colorPreviewPanel!!.repaint()
+                            colorModified = true
+                        },
+                        null
+                    )
+
+                    dialog.isVisible = true
+
+                }
+
+                override fun mouseEntered(e: MouseEvent?) {
+                    cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                }
+
+                override fun mouseExited(e: MouseEvent?) {
+                    cursor = Cursor.getDefaultCursor()
+                }
+
+                override fun mousePressed(e: MouseEvent?) {}
+                override fun mouseReleased(e: MouseEvent?) {}
+            })
 
 
+        }
+        
+        appearancePanel.add(colorPreviewPanel)
+
+        settingsPanel.add(appearancePanel)
+
+        mainPanel!!.add(settingsPanel, BorderLayout.NORTH)
+
+        // Table setup
         tableModel = object : DefaultTableModel(arrayOf("Regular Expression Patterns"), 0) {
             override fun isCellEditable(row: Int, column: Int): Boolean = true
         }
 
-        SecretsMaskerSettings.getInstance().patterns.distinct().forEach { pattern ->
+        currentSettings.patterns.distinct().forEach { pattern ->
             tableModel!!.addRow(arrayOf(pattern))
         }
+
 
         patternsTable = object : JTable(tableModel) {
             override fun processKeyBinding(ks: KeyStroke, e: KeyEvent, condition: Int, pressed: Boolean): Boolean {
@@ -154,12 +241,22 @@ class SecretsMaskerConfigurable : Configurable {
             }
         })
 
-        val scrollPane = JScrollPane(patternsTable).apply { preferredSize = Dimension(450, 200) }
+        val scrollPane = JScrollPane(patternsTable).apply {
+            preferredSize = Dimension(450, 150)
+            minimumSize = Dimension(450, 100)
+        }
         mainPanel!!.add(scrollPane, BorderLayout.CENTER)
 
-        val buttonPanel = JPanel(FlowLayout(FlowLayout.RIGHT))
-        buttonPanel.add(JButton("Add Pattern").apply { addActionListener { addRow("") } })
-        buttonPanel.add(JButton("Remove Pattern").apply { addActionListener { deleteSelectedRows() } })
+        // Buttons at bottom
+        val buttonPanel = JPanel(FlowLayout(FlowLayout.RIGHT)).apply {
+            border = EmptyBorder(10, 0, 0, 0)
+        }
+        buttonPanel.add(JButton("Add Pattern").apply {
+            addActionListener { addRow("") }
+        })
+        buttonPanel.add(JButton("Remove Pattern").apply {
+            addActionListener { deleteSelectedRows() }
+        })
         mainPanel!!.add(buttonPanel, BorderLayout.SOUTH)
 
         return mainPanel!!
@@ -205,13 +302,15 @@ class SecretsMaskerConfigurable : Configurable {
 
     override fun isModified(): Boolean {
         val settings = SecretsMaskerSettings.getInstance()
+
         val currentPatterns = (0 until tableModel!!.rowCount).map { tableModel!!.getValueAt(it, 0).toString().trim() }.filter { it.isNotEmpty() }
         val hideValueSettingChanged = hideOnlyValuesCheckBox?.isSelected != settings.hideOnlyValues
         val invisibleChanged = invisibleHighlightCheckBox?.isSelected != settings.invisibleHighlight
 
-        return settings.patterns != currentPatterns ||
-                hideValueSettingChanged ||
-                invisibleChanged
+        return hideValueSettingChanged ||
+                invisibleChanged ||
+                colorModified ||
+                settings.patterns != currentPatterns
     }
 
     override fun apply() {
@@ -220,12 +319,15 @@ class SecretsMaskerConfigurable : Configurable {
         (0 until tableModel!!.rowCount).map {
             tableModel!!.getValueAt(it, 0).toString().trim() }.filter { it.isNotEmpty() }.forEach { settings.patterns.add(it) }
 
-        // Save the checkbox settings
+        // Save the settings.
         hideOnlyValuesCheckBox?.let {
             settings.hideOnlyValues = it.isSelected
         }
         invisibleHighlightCheckBox?.let {
             settings.invisibleHighlight = it.isSelected
+        }
+        colorPreviewPanel?.let {
+            settings.highlightColor = it.background.rgb
         }
 
         // Use invokeLater to ensure UI thread compatibility without coroutines
@@ -249,9 +351,10 @@ class SecretsMaskerConfigurable : Configurable {
         tableModel!!.rowCount = 0
         SecretsMaskerSettings.getInstance().patterns.distinct().forEach { tableModel!!.addRow(arrayOf(it)) }
 
-        // Reset the checkbox state
+        // Reset the settings state
         hideOnlyValuesCheckBox?.isSelected = settings.hideOnlyValues
         invisibleHighlightCheckBox?.isSelected = settings.invisibleHighlight
+        colorPreviewPanel?.background = Color(settings.highlightColor)
     }
 }
 

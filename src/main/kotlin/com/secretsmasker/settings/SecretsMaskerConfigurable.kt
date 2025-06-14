@@ -1,6 +1,7 @@
-package com.example.secretsmasker.settings
+package com.secretsmasker.settings
 
-import com.example.secretsmasker.SecretsMaskerService
+import com.intellij.openapi.application.ApplicationManager
+import com.secretsmasker.SecretsMaskerService
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.options.Configurable
@@ -212,7 +213,7 @@ class SecretsMaskerConfigurable : Configurable {
         }
 
         // Use invokeLater to ensure UI thread compatibility without coroutines
-        com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+        ApplicationManager.getApplication().invokeLater {
             refreshAllEditors()
         }
     }

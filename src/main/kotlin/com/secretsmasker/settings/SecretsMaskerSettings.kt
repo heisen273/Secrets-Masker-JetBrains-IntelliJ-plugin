@@ -1,4 +1,4 @@
-package com.example.secretsmasker.settings
+package com.secretsmasker.settings
 
 import com.intellij.openapi.components.*
 import com.intellij.util.xmlb.XmlSerializerUtil

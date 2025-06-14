@@ -1,6 +1,6 @@
-package com.example.secretsmasker.actions
+package com.secretsmasker.actions
 
-import com.example.secretsmasker.SecretsMaskerService
+import com.secretsmasker.SecretsMaskerService
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service

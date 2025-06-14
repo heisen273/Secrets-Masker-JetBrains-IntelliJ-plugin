@@ -1,4 +1,4 @@
-package com.example.secretsmasker.actions
+package com.secretsmasker.actions
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent

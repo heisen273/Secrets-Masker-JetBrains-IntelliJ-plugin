@@ -1,26 +1,26 @@
 <idea-plugin>
-    <id>com.example.secretsmasker</id>
+    <id>com.secretsmasker</id>
     <name>Secrets Masker</name>
-    <vendor email="support@example.com" url="http://www.example.com">Example</vendor>
+    <vendor url="https://github.com/heisen273/Secrets-Masker-JetBrains-IntelliJ-plugin">Secrets Masker</vendor>
     <description>Masks sensitive data like API keys in the editor with bold text.</description>
     <depends>com.intellij.modules.platform</depends>
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.example.secretsmasker.SecretsMaskerService"/>
-        <applicationService serviceImplementation="com.example.secretsmasker.settings.SecretsMaskerSettings"/>
+        <applicationService serviceImplementation="com.secretsmasker.SecretsMaskerService"/>
+        <applicationService serviceImplementation="com.secretsmasker.settings.SecretsMaskerSettings"/>
         <applicationConfigurable
             groupId="tools"
             displayName="Secrets Masker"
-            id="com.example.secretsmasker.settings.SecretsMaskerConfigurable"
-            instance="com.example.secretsmasker.settings.SecretsMaskerConfigurable"/>
-        <editorFactoryListener implementation="com.example.secretsmasker.SecretsMaskerListener"/>
+            id="com.secretsmasker.settings.SecretsMaskerConfigurable"
+            instance="com.secretsmasker.settings.SecretsMaskerConfigurable"/>
+        <editorFactoryListener implementation="com.secretsmasker.SecretsMaskerListener"/>
     </extensions>
     <applicationListeners>
-        <listener class="com.example.secretsmasker.SecretsMaskerListener" topic="com.intellij.openapi.editor.event.EditorFactoryListener"/>
+        <listener class="com.secretsmasker.SecretsMaskerListener" topic="com.intellij.openapi.editor.event.EditorFactoryListener"/>
     </applicationListeners>
     <actions>
     <!-- Define the action group for your extension -->
     <group id="SecretsMasker.Group"
-           class="com.example.secretsmasker.SecretsMaskerActionGroup"
+           class="com.secretsmasker.SecretsMaskerActionGroup"
            text="Secrets Masker"
            description="Secrets Masker actions"
            popup="true">
@@ -29,7 +29,7 @@
 
     <!-- Add toggle action to your group -->
     <action id="SecretsMasker.Toggle"
-            class="com.example.secretsmasker.actions.ToggleMasking"
+            class="com.secretsmasker.actions.ToggleMasking"
             text="Toggle Secrets Masking"
             description="Enable/disable secrets masking">
         <add-to-group group-id="SecretsMasker.Group" anchor="first"/>
@@ -38,7 +38,7 @@
 
     <!-- Add settings action to the group -->
     <action id="SecretsMasker.Settings"
-            class="com.example.secretsmasker.actions.OpenSettings"
+            class="com.secretsmasker.actions.OpenSettings"
             text="Settings"
             description="Open Secrets Masker settings">
         <add-to-group group-id="SecretsMasker.Group" anchor="last"/>

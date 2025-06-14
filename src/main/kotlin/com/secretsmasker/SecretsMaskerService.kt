@@ -1,6 +1,6 @@
-package com.example.secretsmasker
+package com.secretsmasker
 
-import com.example.secretsmasker.settings.SecretsMaskerSettings
+import com.secretsmasker.settings.SecretsMaskerSettings
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor

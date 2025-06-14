@@ -1,4 +1,4 @@
-package com.example.secretsmasker
+package com.secretsmasker
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.event.DocumentEvent

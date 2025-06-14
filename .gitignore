@@ -1,0 +1,6 @@
+.gradle
+.intellijPlatform
+build
+.idea
+.DS_Store
+gradle

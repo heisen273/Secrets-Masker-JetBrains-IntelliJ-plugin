@@ -1,0 +1,48 @@
+<idea-plugin>
+    <id>com.example.secretsmasker</id>
+    <name>Secrets Masker</name>
+    <vendor email="support@example.com" url="http://www.example.com">Example</vendor>
+    <description>Masks sensitive data like API keys in the editor with bold text.</description>
+    <depends>com.intellij.modules.platform</depends>
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.example.secretsmasker.SecretsMaskerService"/>
+        <applicationService serviceImplementation="com.example.secretsmasker.settings.SecretsMaskerSettings"/>
+        <applicationConfigurable
+            groupId="tools"
+            displayName="Secrets Masker"
+            id="com.example.secretsmasker.settings.SecretsMaskerConfigurable"
+            instance="com.example.secretsmasker.settings.SecretsMaskerConfigurable"/>
+        <editorFactoryListener implementation="com.example.secretsmasker.SecretsMaskerListener"/>
+    </extensions>
+    <applicationListeners>
+        <listener class="com.example.secretsmasker.SecretsMaskerListener" topic="com.intellij.openapi.editor.event.EditorFactoryListener"/>
+    </applicationListeners>
+    <actions>
+    <!-- Define the action group for your extension -->
+    <group id="SecretsMasker.Group"
+           class="com.example.secretsmasker.SecretsMaskerActionGroup"
+           text="Secrets Masker"
+           description="Secrets Masker actions"
+           popup="true">
+        <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </group>
+
+    <!-- Add toggle action to your group -->
+    <action id="SecretsMasker.Toggle"
+            class="com.example.secretsmasker.actions.ToggleMasking"
+            text="Toggle Secrets Masking"
+            description="Enable/disable secrets masking">
+        <add-to-group group-id="SecretsMasker.Group" anchor="first"/>
+        <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt G"/>
+    </action>
+
+    <!-- Add settings action to the group -->
+    <action id="SecretsMasker.Settings"
+            class="com.example.secretsmasker.actions.OpenSettings"
+            text="Settings"
+            description="Open Secrets Masker settings">
+        <add-to-group group-id="SecretsMasker.Group" anchor="last"/>
+    </action>
+
+    </actions>
+</idea-plugin>

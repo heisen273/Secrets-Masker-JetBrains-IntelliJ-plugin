@@ -1,0 +1,38 @@
+<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#374151"/>
+            <stop offset="100%" style="stop-color:#1F2937"/>
+        </linearGradient>
+    </defs>
+
+    <!-- Background -->
+    <rect width="16" height="16" rx="2" fill="url(#bgGrad)"/>
+
+    <!-- Asterisk symbols -->
+    <g fill="#FBBF24" stroke="#FBBF24" stroke-width="0.2">
+        <!-- First asterisk -->
+        <g transform="translate(4, 5)">
+            <line x1="0" y1="-1.5" x2="0" y2="1.5" stroke-width="0.7" stroke-linecap="round"/>
+            <line x1="-1.5" y1="0" x2="1.5" y2="0" stroke-width="0.7" stroke-linecap="round"/>
+            <line x1="-1" y1="-1" x2="1" y2="1" stroke-width="0.7" stroke-linecap="round"/>
+            <line x1="1" y1="-1" x2="-1" y2="1" stroke-width="0.7" stroke-linecap="round"/>
+        </g>
+
+        <!-- Second asterisk -->
+        <g transform="translate(8, 8)">
+            <line x1="0" y1="-1.5" x2="0" y2="1.5" stroke-width="0.7" stroke-linecap="round"/>
+            <line x1="-1.5" y1="0" x2="1.5" y2="0" stroke-width="0.7" stroke-linecap="round"/>
+            <line x1="-1" y1="-1" x2="1" y2="1" stroke-width="0.7" stroke-linecap="round"/>
+            <line x1="1" y1="-1" x2="-1" y2="1" stroke-width="0.7" stroke-linecap="round"/>
+        </g>
+
+        <!-- Third asterisk -->
+        <g transform="translate(12, 11)">
+            <line x1="0" y1="-1.5" x2="0" y2="1.5" stroke-width="0.7" stroke-linecap="round"/>
+            <line x1="-1.5" y1="0" x2="1.5" y2="0" stroke-width="0.7" stroke-linecap="round"/>
+            <line x1="-1" y1="-1" x2="1" y2="1" stroke-width="0.7" stroke-linecap="round"/>
+            <line x1="1" y1="-1" x2="-1" y2="1" stroke-width="0.7" stroke-linecap="round"/>
+        </g>
+    </g>
+</svg>

@@ -64,20 +64,17 @@ class SecretsMaskerConfigurable : Configurable {
             alignmentX = Component.LEFT_ALIGNMENT
             border = EmptyBorder(0, 0, 10, 0)
         }
-
         hideOnlyValuesCheckBox = JCheckBox("Hide only values after patterns").apply {
             toolTipText = "Only hide the value after '=' or ':'"
             isSelected = currentSettings.hideOnlyValues
         }
-        checkboxOptions.add(hideOnlyValuesCheckBox!!)
-
         invisibleHighlightCheckBox = JCheckBox("Invisible highlight").apply {
             toolTipText = "Make highlighted text blend with background"
             isSelected = currentSettings.invisibleHighlight
         }
+
+        checkboxOptions.add(hideOnlyValuesCheckBox!!)
         checkboxOptions.add(invisibleHighlightCheckBox!!)
-
-
         settingsPanel.add(checkboxOptions)
 
         // Appearance settings panel
@@ -86,8 +83,6 @@ class SecretsMaskerConfigurable : Configurable {
         }
 
         // Color picker
-        appearancePanel.add(JLabel("Highlight Color:"))
-
         val colorChooser = JColorChooser(Color(currentSettings.highlightColor))
         // Remove all chooser panels except Swatches
         val swatchesPanel = colorChooser.chooserPanels.first()
@@ -138,22 +133,18 @@ class SecretsMaskerConfigurable : Configurable {
 
 
         }
-        
+
+        appearancePanel.add(JLabel("Highlight Color:"))
         appearancePanel.add(colorPreviewPanel)
-
         settingsPanel.add(appearancePanel)
-
-        mainPanel!!.add(settingsPanel, BorderLayout.NORTH)
 
         // Table setup
         tableModel = object : DefaultTableModel(arrayOf("Regular Expression Patterns"), 0) {
             override fun isCellEditable(row: Int, column: Int): Boolean = true
         }
-
         currentSettings.patterns.distinct().forEach { pattern ->
             tableModel!!.addRow(arrayOf(pattern))
         }
-
 
         patternsTable = object : JTable(tableModel) {
             override fun processKeyBinding(ks: KeyStroke, e: KeyEvent, condition: Int, pressed: Boolean): Boolean {
@@ -245,6 +236,7 @@ class SecretsMaskerConfigurable : Configurable {
             preferredSize = Dimension(450, 150)
             minimumSize = Dimension(450, 100)
         }
+        mainPanel!!.add(settingsPanel, BorderLayout.NORTH)
         mainPanel!!.add(scrollPane, BorderLayout.CENTER)
 
         // Buttons at bottom

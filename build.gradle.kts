@@ -22,6 +22,7 @@ dependencies {
 
     implementation(kotlin("stdlib"))
     intellijPlatform {
+
         local("/Applications/PyCharm.app")
 //        val type = "IC"
 //        val version = "2024.3.0"

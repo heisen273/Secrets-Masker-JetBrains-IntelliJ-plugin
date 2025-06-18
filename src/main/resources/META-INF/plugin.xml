@@ -22,7 +22,7 @@
     <group id="SecretsMasker.Group"
            class="com.secretsmasker.SecretsMaskerActionGroup"
            text="Secrets Masker"
-           description="Secrets Masker actions"
+           icon="META-INF/menuIcon.svg"
            popup="true">
         <add-to-group group-id="ToolsMenu" anchor="last"/>
     </group>

@@ -4,12 +4,12 @@ plugins {
     kotlin("jvm") version "1.9.24"
 }
 
-group = "com.example"
-version = "1.0.0"
+group = "com"
+version = "1.0.3"
 
 repositories {
     mavenCentral()
-  intellijPlatform {
+    intellijPlatform {
     defaultRepositories()
   }
 }
@@ -22,6 +22,7 @@ dependencies {
 
     implementation(kotlin("stdlib"))
     intellijPlatform {
+
         local("/Applications/PyCharm.app")
 //        val type = "IC"
 //        val version = "2024.3.0"
@@ -45,7 +46,7 @@ tasks {
         kotlinOptions.jvmTarget = "17"
     }
     patchPluginXml {
-        sinceBuild.set("242")
+        sinceBuild.set("212")
         untilBuild.set("252.*")
     }
     buildPlugin {

@@ -29,7 +29,7 @@ class SecretsMaskerService {
         return isMaskingEnabled
     }
 
-    fun maskSensitiveData(editor: Editor) {
+    fun maskSensitiveData(editor: Editor, settings: SecretsMaskerSettings? = null) {
         logger.warn("Attempting to mask sensitive data in editor: ${editor.document.textLength} chars")
 
         val highlighter = editor.markupModel
@@ -45,7 +45,7 @@ class SecretsMaskerService {
         var totalMatchCount = 0
 
         // Get settings
-        val settings = SecretsMaskerSettings.getInstance()
+        val settings = settings ?: SecretsMaskerSettings.getInstance()
 
         // Apply each pattern
         for (patternStr in settings.patterns) {

@@ -18,6 +18,12 @@ import javax.swing.undo.*
 import java.awt.event.KeyEvent
 import kotlin.math.min
 import java.util.EventObject
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
+import com.intellij.openapi.fileTypes.FileTypeManager
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.util.Disposer
 
 
 class SecretsMaskerConfigurable : Configurable {
@@ -34,77 +40,93 @@ class SecretsMaskerConfigurable : Configurable {
     private var colorPreviewPanel: JPanel? = null
     private var colorModified: Boolean = false
 
+    private var previewEditor: Editor? = null
+
+
     override fun getDisplayName(): String = "Secrets Masker"
 
     override fun createComponent(): JComponent {
-        mainPanel = JPanel(BorderLayout(10, 10)).apply {
-            border = EmptyBorder(10, 10, 10, 10)
+        mainPanel = JPanel(BorderLayout()).apply {
+            border = EmptyBorder(20, 20, 20, 20)
         }
         val currentSettings = SecretsMaskerSettings.getInstance()
 
-        // Create a vertical panel for all settings
+        // Create main content panel
+        val contentPanel = JPanel(BorderLayout(0, 20))
+
+        // Top section - Settings
+        val settingsPanel = createSettingsPanel(currentSettings)
+        contentPanel.add(settingsPanel, BorderLayout.NORTH)
+
+        // Middle section - Patterns table
+        val patternsPanel = createPatternsPanel(currentSettings)
+        contentPanel.add(patternsPanel, BorderLayout.CENTER)
+
+        // Bottom section - Preview (smaller)
+        val previewPanel = createPreviewPanel()
+        previewPanel.preferredSize = Dimension(0, 150)
+        contentPanel.add(previewPanel, BorderLayout.SOUTH)
+
+        mainPanel!!.add(contentPanel, BorderLayout.CENTER)
+        return mainPanel!!
+    }
+
+    private fun createSettingsPanel(currentSettings: SecretsMaskerSettings): JPanel {
         val settingsPanel = JPanel()
         settingsPanel.layout = BoxLayout(settingsPanel, BoxLayout.Y_AXIS)
-        settingsPanel.border = EmptyBorder(0, 0, 15, 0)
+        settingsPanel.border = EmptyBorder(0, 0, 0, 0)
 
-        // Instructions
-        val instructionLabel = JLabel(
-            "<html><b>Configure patterns to match secrets</b><br>" +
-                    "Each pattern is compiled as a regular expression.<br>" +
-                    "Double-click to edit, press Enter to save, or Backspace to remove rows.</html>"
-        ).apply {
-            border = EmptyBorder(0, 0, 10, 0)
-            alignmentX = Component.LEFT_ALIGNMENT
-        }
-        settingsPanel.add(instructionLabel)
-
-        // Pattern options panel
-        val checkboxOptions = JPanel().apply {
-            layout = BoxLayout(this, BoxLayout.Y_AXIS) // <-- vertical layout
-            alignmentX = Component.LEFT_ALIGNMENT
-            border = EmptyBorder(0, 0, 10, 0)
-        }
-
+        // Option 1: Hide only values checkbox
         hideOnlyValuesCheckBox = JCheckBox("Hide only values after patterns").apply {
             toolTipText = "Only hide the value after '=' or ':'"
             isSelected = currentSettings.hideOnlyValues
+            addActionListener { updatePreview() }
+            alignmentX = Component.LEFT_ALIGNMENT
+            border = EmptyBorder(1, 0, 0, 0)
         }
-        checkboxOptions.add(hideOnlyValuesCheckBox!!)
+        settingsPanel.add(hideOnlyValuesCheckBox!!)
 
+        // Option 2: Invisible highlight checkbox
         invisibleHighlightCheckBox = JCheckBox("Invisible highlight").apply {
             toolTipText = "Make highlighted text blend with background"
             isSelected = currentSettings.invisibleHighlight
+            addActionListener { updatePreview() }
+            alignmentX = Component.LEFT_ALIGNMENT
+            border = EmptyBorder(1, 0, 0, 0)
         }
-        checkboxOptions.add(invisibleHighlightCheckBox!!)
+        settingsPanel.add(invisibleHighlightCheckBox!!)
 
-
-        settingsPanel.add(checkboxOptions)
-
-        // Appearance settings panel
-        val appearancePanel = JPanel(FlowLayout(FlowLayout.LEFT, 10, 0)).apply {
+        // Option 3: Color picker
+        val colorPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 5)).apply {
             alignmentX = Component.LEFT_ALIGNMENT
         }
+        colorPanel.add(JLabel("Highlight Color: "))
+        colorPreviewPanel = createColorPreviewPanel(currentSettings)
+        colorPanel.add(colorPreviewPanel!!)
+        settingsPanel.add(colorPanel)
 
-        // Color picker
-        appearancePanel.add(JLabel("Highlight Color:"))
+        return settingsPanel
+    }
 
+    private fun createColorPreviewPanel(currentSettings: SecretsMaskerSettings): JPanel {
         val colorChooser = JColorChooser(Color(currentSettings.highlightColor))
-        // Remove all chooser panels except Swatches
         val swatchesPanel = colorChooser.chooserPanels.first()
         for (panel in colorChooser.chooserPanels) {
             if (panel != swatchesPanel) {
                 colorChooser.removeChooserPanel(panel)
             }
         }
-        colorPreviewPanel = JPanel().apply {
+
+        return JPanel().apply {
             background = Color(currentSettings.highlightColor)
-            preferredSize = Dimension(20, 20)
-            border = BorderFactory.createLineBorder(Color.GRAY)
+            preferredSize = Dimension(30, 25)
+            border = BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                BorderFactory.createEmptyBorder(2, 2, 2, 2)
+            )
 
             addMouseListener(object : MouseListener {
-
                 override fun mouseClicked(e: MouseEvent?) {
-                    // Create and show dialog manually
                     val dialog = JColorChooser.createDialog(
                         mainPanel,
                         "Select Highlight Color",
@@ -112,16 +134,15 @@ class SecretsMaskerConfigurable : Configurable {
                         colorChooser,
                         {
                             val selectedColor = colorChooser.color
-                            colorPreviewPanel!!.background = selectedColor
+                            background = selectedColor
                             currentSettings.highlightColor = selectedColor.rgb
-                            colorPreviewPanel!!.repaint()
+                            repaint()
                             colorModified = true
+                            updatePreview()
                         },
                         null
                     )
-
                     dialog.isVisible = true
-
                 }
 
                 override fun mouseEntered(e: MouseEvent?) {
@@ -135,25 +156,45 @@ class SecretsMaskerConfigurable : Configurable {
                 override fun mousePressed(e: MouseEvent?) {}
                 override fun mouseReleased(e: MouseEvent?) {}
             })
-
-
         }
-        
-        appearancePanel.add(colorPreviewPanel)
+    }
 
-        settingsPanel.add(appearancePanel)
+    private fun createPatternsPanel(currentSettings: SecretsMaskerSettings): JPanel {
+        val patternsPanel = JPanel(BorderLayout(0, 0))
+        patternsPanel.border = BorderFactory.createTitledBorder("Regular Expression Patterns")
 
-        mainPanel!!.add(settingsPanel, BorderLayout.NORTH)
+        // Instructions for patterns
+        val instructionsPanel = JPanel()
+        instructionsPanel.layout = BoxLayout(instructionsPanel, BoxLayout.Y_AXIS)
+        instructionsPanel.border = EmptyBorder(5, 10, 5, 10)
+
+        val mainInstructions = JLabel(
+            "<html>Configure patterns to match secrets. Each pattern is compiled as a regular expression.</html>"
+        ).apply {
+            alignmentX = Component.LEFT_ALIGNMENT
+            font = font.deriveFont(Font.PLAIN, 12f)
+        }
+        instructionsPanel.add(mainInstructions)
+
+        val tableInstructions = JLabel(
+            "<html><i>Double-click/start typing to edit, press Enter to save, or Backspace to remove rows.</i></html>"
+        ).apply {
+            alignmentX = Component.LEFT_ALIGNMENT
+            font = font.deriveFont(Font.ITALIC, 11f)
+            foreground = Color.GRAY
+            border = EmptyBorder(2, 0, 0, 0)
+        }
+        instructionsPanel.add(tableInstructions)
+
+        patternsPanel.add(instructionsPanel, BorderLayout.NORTH)
 
         // Table setup
-        tableModel = object : DefaultTableModel(arrayOf("Regular Expression Patterns"), 0) {
+        tableModel = object : DefaultTableModel(arrayOf("Pattern"), 0) {
             override fun isCellEditable(row: Int, column: Int): Boolean = true
         }
-
         currentSettings.patterns.distinct().forEach { pattern ->
             tableModel!!.addRow(arrayOf(pattern))
         }
-
 
         patternsTable = object : JTable(tableModel) {
             override fun processKeyBinding(ks: KeyStroke, e: KeyEvent, condition: Int, pressed: Boolean): Boolean {
@@ -163,6 +204,7 @@ class SecretsMaskerConfigurable : Configurable {
                     if (e.isShiftDown && undoManager.canRedo()) undoManager.redo()
                     else if (undoManager.canUndo()) undoManager.undo()
                     repaint()
+                    updatePreview()
                     return true
                 }
 
@@ -178,7 +220,6 @@ class SecretsMaskerConfigurable : Configurable {
                 return super.processKeyBinding(ks, e, condition, pressed)
             }
 
-            // Ensure editor gains focus when editing starts
             override fun editCellAt(row: Int, column: Int, e: EventObject?): Boolean {
                 val result = super.editCellAt(row, column, e)
                 if (result) {
@@ -192,7 +233,7 @@ class SecretsMaskerConfigurable : Configurable {
         }.apply {
             tableHeader.reorderingAllowed = false
             selectionModel.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
-            columnModel.getColumn(0).preferredWidth = 400
+            rowHeight = 25
         }
 
         // Set up DefaultCellEditor with JTextField
@@ -230,6 +271,7 @@ class SecretsMaskerConfigurable : Configurable {
                     if (newValue.isEmpty()) deleteRow(row)
                     else if (newValue != originalCellValue) {
                         undoManager.addEdit(CellEditUndoableEdit(tableModel!!, row, col, originalCellValue, newValue))
+                        updatePreview()
                     }
                 }
             }
@@ -242,24 +284,96 @@ class SecretsMaskerConfigurable : Configurable {
         })
 
         val scrollPane = JScrollPane(patternsTable).apply {
-            preferredSize = Dimension(450, 150)
-            minimumSize = Dimension(450, 100)
+            preferredSize = Dimension(0, 150)
         }
-        mainPanel!!.add(scrollPane, BorderLayout.CENTER)
+        patternsPanel.add(scrollPane, BorderLayout.CENTER)
 
-        // Buttons at bottom
-        val buttonPanel = JPanel(FlowLayout(FlowLayout.RIGHT)).apply {
-            border = EmptyBorder(10, 0, 0, 0)
-        }
+        // Buttons panel
+        val buttonPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 5, 5))
         buttonPanel.add(JButton("Add Pattern").apply {
             addActionListener { addRow("") }
         })
-        buttonPanel.add(JButton("Remove Pattern").apply {
+        buttonPanel.add(JButton("Remove Selected").apply {
             addActionListener { deleteSelectedRows() }
         })
-        mainPanel!!.add(buttonPanel, BorderLayout.SOUTH)
 
-        return mainPanel!!
+        patternsPanel.add(buttonPanel, BorderLayout.SOUTH)
+        return patternsPanel
+    }
+
+    private fun createPreviewPanel(): JPanel {
+        val previewPanel = JPanel(BorderLayout())
+        previewPanel.border = BorderFactory.createTitledBorder("Preview")
+
+        // Sample text with various secret patterns (shorter for compact preview)
+        val sampleText = """
+# Configuration
+SECRET_TOKEN=ghp_abcdefghij
+export API_KEY="prod-key-value"
+"api_key": "json-key-12345"
+PASSWORD: admin123
+    """.trimIndent()
+
+        // Create editor
+        val project = ProjectManager.getInstance().defaultProject
+        val document = EditorFactory.getInstance().createDocument(sampleText)
+        previewEditor = EditorFactory.getInstance().createEditor(document, project).apply {
+            if (this is EditorEx) {
+                val editorSettings = settings
+                editorSettings.isLineNumbersShown = true
+                editorSettings.isLineMarkerAreaShown = false
+                editorSettings.isFoldingOutlineShown = false
+                editorSettings.isRightMarginShown = false
+                editorSettings.isVirtualSpace = false
+                editorSettings.isCaretRowShown = false
+
+                // Set file type for syntax highlighting
+                val fileType = FileTypeManager.getInstance().getFileTypeByExtension("properties")
+                val highlighter = EditorHighlighterFactory.getInstance()
+                    .createEditorHighlighter(project, fileType)
+                setHighlighter(highlighter)
+            }
+        }
+
+        previewPanel.add(previewEditor!!.component, BorderLayout.CENTER)
+
+        // Initial preview update
+        SwingUtilities.invokeLater { updatePreview() }
+
+        return previewPanel
+    }
+
+    private fun updatePreview() {
+        previewEditor?.let { editor ->
+            ApplicationManager.getApplication().invokeLater {
+                // Get current patterns from table
+                val currentPatterns = (0 until tableModel!!.rowCount)
+                    .map { tableModel!!.getValueAt(it, 0).toString().trim() }
+                    .filter { it.isNotEmpty() }
+
+                // Get current settings
+                val hideOnlyValues = hideOnlyValuesCheckBox?.isSelected ?: false
+                val invisibleHighlight = invisibleHighlightCheckBox?.isSelected ?: false
+                val highlightColor = colorPreviewPanel?.background ?: Color.LIGHT_GRAY
+
+                // Create temporary settings for preview
+                val tempSettings = SecretsMaskerSettings().apply {
+                    patterns.clear()
+                    patterns.addAll(currentPatterns)
+                    this.hideOnlyValues = hideOnlyValues
+                    this.invisibleHighlight = invisibleHighlight
+                    this.highlightColor = highlightColor.rgb
+                }
+
+                // Apply masking with temporary settings
+                val maskerService = service<SecretsMaskerService>()
+                try {
+                    maskerService.maskSensitiveData(editor, tempSettings)
+                } catch (e: Exception) {
+                    println("Preview update failed: ${e.message}")
+                }
+            }
+        }
     }
 
     private fun addRow(value: String) {
@@ -270,6 +384,7 @@ class SecretsMaskerConfigurable : Configurable {
             patternsTable!!.editCellAt(rowIndex, 0)
             patternsTable!!.editorComponent?.requestFocus()
         }
+        updatePreview()
     }
 
     private fun deleteRow(row: Int) {
@@ -277,6 +392,7 @@ class SecretsMaskerConfigurable : Configurable {
         val value = tableModel!!.getValueAt(row, 0).toString()
         tableModel!!.removeRow(row)
         undoManager.addEdit(DeleteRowUndoableEdit(tableModel!!, row, value))
+        updatePreview()
     }
 
     private fun deleteSelectedRows() {
@@ -287,6 +403,7 @@ class SecretsMaskerConfigurable : Configurable {
             undoManager.endCompoundEdit()
             updateTableSelection(if (selectedRows.last() > 0) selectedRows.last() - 1 else 0)
         }
+        updatePreview()
     }
 
     private fun updateTableSelection(row: Int) {
@@ -343,6 +460,15 @@ class SecretsMaskerConfigurable : Configurable {
         val editors = EditorFactory.getInstance().allEditors
         for (editor in editors) {
             maskerService.maskSensitiveData(editor)
+        }
+
+    }
+
+    // Don't forget to dispose the editor when the configurable is disposed
+    override fun disposeUIResources() {
+        previewEditor?.let { editor ->
+            EditorFactory.getInstance().releaseEditor(editor)
+            previewEditor = null
         }
     }
 

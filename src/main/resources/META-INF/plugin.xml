@@ -2,7 +2,68 @@
     <id>com.secretsmasker</id>
     <name>Secrets Masker</name>
     <vendor url="https://github.com/heisen273/Secrets-Masker-JetBrains-IntelliJ-plugin">Secrets Masker</vendor>
-    <description>Masks sensitive data like API keys in the editor with bold text.</description>
+    <description><![CDATA[
+        <h2>Protect Your Secrets During Live Coding Sessions🛡</h2>
+
+        <p><strong>Perfect for streamers, educators, and professionals who share their screen!</strong></p>
+
+        <p>Secrets Masker automatically detects and visually masks sensitive information like API keys, passwords, and tokens directly in your IDE editor. Never accidentally expose credentials during:</p>
+
+        <p><img src="https://raw.githubusercontent.com/heisen273/Secrets-Masker-JetBrains-IntelliJ-plugin/refs/heads/master/assets/demo.gif" alt="Secrets Masker Demo" /></p>
+
+        <ul>
+            <li>🎥 <strong>Live streaming</strong> - Code confidently on Twitch, YouTube, or other platforms</li>
+            <li>🎓 <strong>Teaching sessions</strong> - Share code examples without security risks</li>
+            <li>💼 <strong>Screen sharing meetings</strong> - Present code safely to colleagues or clients</li>
+            <li>📹 <strong>Recording tutorials</strong> - Create educational content without editing out secrets</li>
+            <li>👥 <strong>Pair programming</strong> - Collaborate without worrying about sensitive data exposure</li>
+        </ul>
+
+
+
+        <h3>✨ Key Features</h3>
+        <ul>
+            <li><strong>Real-time masking</strong> - Automatically hides secrets as you type</li>
+            <li><strong>Customizable patterns</strong> - Configure regex patterns for different secret types</li>
+            <li><strong>Smart value detection</strong> - Option to hide only values (after = or :) instead of entire lines</li>
+            <li><strong>Invisible mode</strong> - Make masked text blend seamlessly with background</li>
+            <li><strong>Custom colors</strong> - Choose highlight colors that work with your theme</li>
+            <li><strong>Quick toggle</strong> - Enable/disable masking with Ctrl+Alt+G</li>
+            <li><strong>Live preview</strong> - See exactly how patterns will mask your code</li>
+        </ul>
+
+        <h3>🚀 How It Works</h3>
+        <p>The plugin uses configurable regular expressions to detect patterns like:</p>
+        <ul>
+            <li><code>API_KEY=your_secret_here</code></li>
+            <li><code>PASSWORD: admin123</code></li>
+            <li><code>"token": "bearer_token_value"</code></li>
+            <li><code>SECRET_TOKEN=ghp_abcdefghij</code></li>
+        </ul>
+
+        <p>Detected secrets are highlighted with customizable colors, making them invisible to viewers while keeping them visible to you when needed.</p>
+
+        <h3>⚙️ Easy Configuration</h3>
+        <p>Access settings via <strong>File → Settings → Tools → Secrets Masker</strong></p>
+        <p><img src="https://raw.githubusercontent.com/heisen273/Secrets-Masker-JetBrains-IntelliJ-plugin/refs/heads/master/assets/demo-settings.png" alt="Settings" /></p>
+
+        <ul>
+            <li>Add custom regex patterns for your specific secret formats</li>
+            <li>Choose between full-line or value-only masking</li>
+            <li>Set highlight colors or enable invisible mode</li>
+            <li>Preview how patterns will work with sample code</li>
+        </ul>
+
+        <p><strong>Start streaming and sharing code with confidence!</strong> 🎯</p>
+    ]]></description>
+    <change-notes>
+        <![CDATA[
+          <ul>
+            <li>Added description & docs</li>
+            <li>New settings page</li>
+          </ul>
+        ]]>
+    </change-notes>
     <depends>com.intellij.modules.platform</depends>
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.secretsmasker.SecretsMaskerService"/>

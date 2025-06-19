@@ -1,5 +1,6 @@
 package com.secretsmasker.settings
 
+import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.ApplicationManager
 import com.secretsmasker.SecretsMaskerService
 import com.intellij.openapi.components.service
@@ -20,10 +21,9 @@ import kotlin.math.min
 import java.util.EventObject
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
+//import com.intellij.openapi.editor.highlighter.EditorHighlighter
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.util.Disposer
 
 
 class SecretsMaskerConfigurable : Configurable {
@@ -328,10 +328,18 @@ PASSWORD: admin123
                 editorSettings.isCaretRowShown = false
 
                 // Set file type for syntax highlighting
+//                if (ApplicationInfo.getInstance().build.baselineVersion >= 232) {
+//                    // Apply syntax highlighting
+//                    val fileType = FileTypeManager.getInstance().getFileTypeByExtension("properties")
+//                    val highlighter = EditorHighlighterFactory.getInstance()
+//                        .createEditorHighlighter(project, fileType)
+//                    setHighlighter(highlighter)
+//                }
                 val fileType = FileTypeManager.getInstance().getFileTypeByExtension("properties")
-                val highlighter = EditorHighlighterFactory.getInstance()
-                    .createEditorHighlighter(project, fileType)
-                setHighlighter(highlighter)
+
+                createEditorHighlighter(project, fileType)?.let { highlighter ->
+                    setHighlighter(highlighter)
+                }
             }
         }
 
@@ -341,6 +349,23 @@ PASSWORD: admin123
         SwingUtilities.invokeLater { updatePreview() }
 
         return previewPanel
+    }
+
+    private fun createEditorHighlighter(project: com.intellij.openapi.project.Project, fileType: com.intellij.openapi.fileTypes.FileType): com.intellij.openapi.editor.highlighter.EditorHighlighter? {
+        return try {
+            val factoryClass = Class.forName("com.intellij.openapi.editor.highlighter.EditorHighlighterFactory")
+            val getInstanceMethod = factoryClass.getMethod("getInstance")
+            val factory = getInstanceMethod.invoke(null)
+
+            val createHighlighterMethod = factoryClass.getMethod("createEditorHighlighter",
+                com.intellij.openapi.project.Project::class.java,
+                com.intellij.openapi.fileTypes.FileType::class.java)
+
+            createHighlighterMethod.invoke(factory, project, fileType) as com.intellij.openapi.editor.highlighter.EditorHighlighter
+        } catch (e: Exception) {
+            println("Could not create editor highlighter via reflection: ${e.message}")
+            null
+        }
     }
 
     private fun updatePreview() {

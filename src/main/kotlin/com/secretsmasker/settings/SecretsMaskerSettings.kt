@@ -10,10 +10,13 @@ import java.awt.Color
 )
 class SecretsMaskerSettings : PersistentStateComponent<SecretsMaskerSettings> {
 
+    var enabled: Boolean = true
+
     var patterns: MutableList<String> = mutableListOf("API_KEY.*", "SECRET.*", "PASSWORD.*")
     var hideOnlyValues: Boolean = false
     var invisibleHighlight: Boolean = false
     var highlightColor: Int = Color(180, 180, 180).rgb
+    var warnBeforeDisabling: Boolean = true
 
 
     override fun getState(): SecretsMaskerSettings = this

@@ -36,6 +36,7 @@ class SecretsMaskerConfigurable : Configurable {
 
     private var hideOnlyValuesCheckBox: JCheckBox? = null
     private var invisibleHighlightCheckBox: JCheckBox? = null
+    private var warnBeforeDisablingCheckBox: JCheckBox? = null
 
     private var colorPreviewPanel: JPanel? = null
     private var colorModified: Boolean = false
@@ -96,7 +97,16 @@ class SecretsMaskerConfigurable : Configurable {
         }
         settingsPanel.add(invisibleHighlightCheckBox!!)
 
-        // Option 3: Color picker
+        // Option 3: Warn before disabling checkbox
+        warnBeforeDisablingCheckBox = JCheckBox("Warn before disabling masking").apply {
+            toolTipText = "Show confirmation dialog when disabling secrets masking"
+            isSelected = currentSettings.warnBeforeDisabling
+            alignmentX = Component.LEFT_ALIGNMENT
+            border = EmptyBorder(1, 0, 0, 0)
+        }
+        settingsPanel.add(warnBeforeDisablingCheckBox!!)
+
+        // Option 4: Color picker
         val colorPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 5)).apply {
             alignmentX = Component.LEFT_ALIGNMENT
         }
@@ -107,6 +117,7 @@ class SecretsMaskerConfigurable : Configurable {
 
         return settingsPanel
     }
+
 
     private fun createColorPreviewPanel(currentSettings: SecretsMaskerSettings): JPanel {
         val colorChooser = JColorChooser(Color(currentSettings.highlightColor))
@@ -390,12 +401,27 @@ PASSWORD: admin123
                     this.highlightColor = highlightColor.rgb
                 }
 
-                // Apply masking with temporary settings
+                // Get the masker service
                 val maskerService = service<SecretsMaskerService>()
+
+                // Temporarily save the current masking state
+                val originalMaskingState = maskerService.isMaskingEnabled
+
                 try {
+                    // Temporarily enable masking for preview
+                    if (!maskerService.isMaskingEnabled) {
+                        maskerService.toggleMasking()
+                    }
+
+                    // Apply masking with temporary settings
                     maskerService.maskSensitiveData(editor, tempSettings)
                 } catch (e: Exception) {
                     println("Preview update failed: ${e.message}")
+                } finally {
+                    // Restore original masking state
+                    if (maskerService.isMaskingEnabled != originalMaskingState) {
+                        maskerService.toggleMasking()
+                    }
                 }
             }
         }
@@ -448,12 +474,15 @@ PASSWORD: admin123
         val currentPatterns = (0 until tableModel!!.rowCount).map { tableModel!!.getValueAt(it, 0).toString().trim() }.filter { it.isNotEmpty() }
         val hideValueSettingChanged = hideOnlyValuesCheckBox?.isSelected != settings.hideOnlyValues
         val invisibleChanged = invisibleHighlightCheckBox?.isSelected != settings.invisibleHighlight
+        val warnBeforeDisablingChanged = warnBeforeDisablingCheckBox?.isSelected != settings.warnBeforeDisabling
 
         return hideValueSettingChanged ||
                 invisibleChanged ||
+                warnBeforeDisablingChanged ||
                 colorModified ||
                 settings.patterns != currentPatterns
     }
+
 
     override fun apply() {
         val settings = SecretsMaskerSettings.getInstance()
@@ -468,6 +497,9 @@ PASSWORD: admin123
         invisibleHighlightCheckBox?.let {
             settings.invisibleHighlight = it.isSelected
         }
+        warnBeforeDisablingCheckBox?.let {
+            settings.warnBeforeDisabling = it.isSelected
+        }
         colorPreviewPanel?.let {
             settings.highlightColor = it.background.rgb
         }
@@ -477,6 +509,7 @@ PASSWORD: admin123
             refreshAllEditors()
         }
     }
+
 
     private fun refreshAllEditors() {
         val maskerService = service<SecretsMaskerService>()
@@ -505,6 +538,7 @@ PASSWORD: admin123
         // Reset the settings state
         hideOnlyValuesCheckBox?.isSelected = settings.hideOnlyValues
         invisibleHighlightCheckBox?.isSelected = settings.invisibleHighlight
+        warnBeforeDisablingCheckBox?.isSelected = settings.warnBeforeDisabling
         colorPreviewPanel?.background = Color(settings.highlightColor)
     }
 }

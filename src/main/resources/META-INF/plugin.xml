@@ -5,6 +5,33 @@
     <description><![CDATA[
         <h2>Protect Your Secrets During Live Coding Sessions🛡</h2>
 
+        <h3>⚙️ Usage </h3>
+        <p><img src="https://raw.githubusercontent.com/heisen273/Secrets-Masker-JetBrains-IntelliJ-plugin/refs/heads/master/assets/usage-icon.gif" alt="Usage via icon" /></p>
+
+        <p>
+            If the button is missing:
+            <<ol></ol>
+                <li>Right-click the <i>Tools Menu</i> toolbar, customize</li>
+                <li>Select <b>Add</b> → Search for <b>'Secrets'</b></li>
+                <li>Add the <b>'Toggle Secrets Masking'</b> button</li>
+            </ol>
+        </p>
+
+
+        <p>Access settings via <strong>Tools tab → Secrets Masker → Settings </strong></p>
+
+        <p><img src="https://raw.githubusercontent.com/heisen273/Secrets-Masker-JetBrains-IntelliJ-plugin/refs/heads/master/assets/tools_settings.png" alt="Open settings via tools" /></p>
+
+        <p><img src="https://raw.githubusercontent.com/heisen273/Secrets-Masker-JetBrains-IntelliJ-plugin/refs/heads/master/assets/demo-settings.png" alt="Settings" /></p>
+
+        <ul>
+            <li>Add custom regex patterns for your specific secret formats</li>
+            <li>Choose between full-line or value-only masking</li>
+            <li>Set highlight colors or enable invisible mode</li>
+            <li>Preview how patterns will work with sample code</li>
+        </ul>
+
+        <h2>Protect Your Secrets During Live Coding Sessions🛡</h2>
         <p><strong>Perfect for streamers, educators, and professionals who share their screen!</strong></p>
 
         <p>Secrets Masker automatically detects and visually masks sensitive information like API keys, passwords, and tokens directly in your IDE editor. Never accidentally expose credentials during:</p>
@@ -43,24 +70,15 @@
 
         <p>Detected secrets are highlighted with customizable colors, making them invisible to viewers while keeping them visible to you when needed.</p>
 
-        <h3>⚙️ Easy Configuration</h3>
-        <p>Access settings via <strong>File → Settings → Tools → Secrets Masker</strong></p>
-        <p><img src="https://raw.githubusercontent.com/heisen273/Secrets-Masker-JetBrains-IntelliJ-plugin/refs/heads/master/assets/demo-settings.png" alt="Settings" /></p>
-
-        <ul>
-            <li>Add custom regex patterns for your specific secret formats</li>
-            <li>Choose between full-line or value-only masking</li>
-            <li>Set highlight colors or enable invisible mode</li>
-            <li>Preview how patterns will work with sample code</li>
-        </ul>
 
         <p><strong>Start streaming and sharing code with confidence!</strong> 🎯</p>
     ]]></description>
     <change-notes>
         <![CDATA[
           <ul>
-            <li>Added description & docs</li>
-            <li>New settings page</li>
+            <li>New button to toggle masking</li>
+            <li>Warn before showing setting</li>
+            <li>Settings docs updated</li>
           </ul>
         ]]>
     </change-notes>
@@ -89,14 +107,6 @@
     </group>
 
     <!-- Add toggle action to your group -->
-    <action id="SecretsMasker.Toggle"
-            class="com.secretsmasker.actions.ToggleMasking"
-            text="Toggle Secrets Masking"
-            description="Enable/disable secrets masking">
-        <add-to-group group-id="SecretsMasker.Group" anchor="first"/>
-        <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt G"/>
-    </action>
-
     <!-- Add settings action to the group -->
     <action id="SecretsMasker.Settings"
             class="com.secretsmasker.actions.OpenSettings"
@@ -104,6 +114,17 @@
             description="Open Secrets Masker settings">
         <add-to-group group-id="SecretsMasker.Group" anchor="last"/>
     </action>
+
+    <!-- Toolbar toggle action - appears in top-right toolbar -->
+    <action id="SecretsMasker.ToolbarToggle"
+            class="com.secretsmasker.actions.ToggleMasking"
+            text="Toggle Secrets Masking"
+            description="Enable/disable secrets masking"
+            icon="AllIcons.Debugger.Watch">
+        <add-to-group group-id="SecretsMasker.Group" anchor="first"/>
+        <add-to-group group-id="MainToolbarRight" anchor="first"/>
+    </action>
+
 
     </actions>
 </idea-plugin>

@@ -10,6 +10,7 @@ import com.intellij.openapi.components.service
 class SecretsMaskerListener : EditorFactoryListener {
     private val logger = Logger.getInstance(SecretsMaskerListener::class.java)
 
+
     override fun editorCreated(event: EditorFactoryEvent) {
         val editor = event.editor
         logger.warn("Editor created: ${editor.document.textLength} chars")
@@ -22,6 +23,10 @@ class SecretsMaskerListener : EditorFactoryListener {
         // Listen for document changes
         document.addDocumentListener(object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
+//                if (!maskerService.isMaskingEnabled) {
+////                    logger.warn("Masking is disabled - cleared highlights only")
+//                    return
+//                }
                 logger.warn("Document changed: ${event.document.textLength} chars")
                 maskerService.maskSensitiveData(editor)
             }

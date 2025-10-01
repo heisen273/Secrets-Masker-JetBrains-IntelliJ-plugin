@@ -1,0 +1,41 @@
+# End User License Agreement (EULA)
+
+**Copyright © 2025 heisen273**
+All rights reserved.
+
+This End User License Agreement (“Agreement”) is a legal agreement between you (the “User”) and *heisen273* (the “Developer”) regarding the use of the software plugin (the “Software”).
+
+By installing or using the Software, you agree to be bound by the terms of this Agreement.
+
+---
+
+## 1. Grant of License
+
+The Developer grants you a non-exclusive, non-transferable, royalty-free license to install and use the Software with JetBrains IDEs for personal or commercial purposes.
+
+## 2. Restrictions
+
+* You may not modify, reverse engineer, decompile, or disassemble the Software.
+* You may not redistribute, sublicense, rent, sell, or otherwise make the Software available to third parties.
+* You may not remove or alter any proprietary notices contained in the Software.
+
+## 3. Ownership
+
+The Software is the intellectual property of *heisen273*. All rights not expressly granted to you in this Agreement are reserved by the Developer.
+
+## 4. Disclaimer of Warranty
+
+The Software is provided “as is,” without warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement. Use of the Software is at your own risk.
+
+## 5. Limitation of Liability
+
+In no event shall the Developer be liable for any damages (including, without limitation, lost profits, business interruption, or loss of information) arising out of the use of or inability to use the Software.
+
+## 6. Contact
+
+If you have questions about this Agreement, please contact: https://buymeacoffee.com/petitbof
+
+---
+
+By using the Software, you acknowledge that you have read, understood, and agree to be bound by the terms of this Agreement.
+

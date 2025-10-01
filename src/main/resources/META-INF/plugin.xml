@@ -6,11 +6,11 @@
         <h2>Protect Your Secrets During Live Coding Sessions🛡</h2>
 
         <h3>⚙️ Usage </h3>
-        <p><img src="https://raw.githubusercontent.com/heisen273/Secrets-Masker-JetBrains-IntelliJ-plugin/refs/heads/master/assets/usage-icon.gif" alt="Usage via icon" /></p>
+        <p><img src="https://raw.githubusercontent.com/heisen273/Secrets-Masker-JetBrains-IntelliJ-plugin/refs/heads/master/assets/usage_icon.gif" alt="Usage via icon" /></p>
 
         <p>
             If the button is missing:
-            <<ol></ol>
+            <ol>
                 <li>Right-click the <i>Tools Menu</i> toolbar, customize</li>
                 <li>Select <b>Add</b> → Search for <b>'Secrets'</b></li>
                 <li>Add the <b>'Toggle Secrets Masking'</b> button</li>

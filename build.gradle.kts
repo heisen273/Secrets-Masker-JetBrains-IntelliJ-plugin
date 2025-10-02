@@ -5,7 +5,24 @@ plugins {
 }
 
 group = "com"
-version = "1.0.7"
+version = "1.0.71"
+
+tasks {
+    withType<JavaCompile> {
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
+    }
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions.jvmTarget = "17"
+    }
+    patchPluginXml {
+        sinceBuild.set("222")
+        untilBuild.set("252.*")
+    }
+    buildPlugin {
+        archiveBaseName.set("SecretsMasker")
+    }
+}
 
 repositories {
     mavenCentral()
@@ -23,6 +40,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     intellijPlatform {
 
+        local("/Applications/PyCharm CE 2.app")
         local("/Applications/PyCharm.app")
 //        val type = "IC"
 //        val version = "2024.3.0"
@@ -37,22 +55,6 @@ dependencies {
 //    plugins.set(listOf("java"))
 //}
 
-tasks {
-    withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
-    }
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
-    }
-    patchPluginXml {
-        sinceBuild.set("212")
-        untilBuild.set("252.*")
-    }
-    buildPlugin {
-        archiveBaseName.set("SecretsMasker")
-    }
-}
 
 testing {
     suites {

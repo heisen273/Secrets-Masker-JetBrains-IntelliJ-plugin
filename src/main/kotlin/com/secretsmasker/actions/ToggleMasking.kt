@@ -39,8 +39,8 @@ class ToggleMasking : ToggleAction() {
         if (!state && settings.warnBeforeDisabling) {
             val result = Messages.showYesNoDialog(
                 project,
-                "Are you sure you want to disable secrets masking?\n\nThis will reveal all sensitive information in your editor.",
-                "Disable Secrets Masking",
+                "Are you sure you want to disable masking?",
+                "Confirm Disabling Secrets Masking",
                 "Yes",
                 "Cancel",
                 Messages.getWarningIcon()
@@ -54,12 +54,6 @@ class ToggleMasking : ToggleAction() {
 
         // Toggle the masking state
         maskerService.toggleMasking()
-
-        // Show notification to user about current state
-//        if (project != null) {
-//            val message = if (state) "Secrets masking enabled" else "Secrets masking disabled"
-//            Messages.showInfoMessage(project, message, "Masking Toggle")
-//        }
 
         // Re-apply masking to all open editors
         refreshAllEditors(maskerService)

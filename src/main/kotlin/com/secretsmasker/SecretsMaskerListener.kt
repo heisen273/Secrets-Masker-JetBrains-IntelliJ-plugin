@@ -23,10 +23,6 @@ class SecretsMaskerListener : EditorFactoryListener {
         // Listen for document changes
         document.addDocumentListener(object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
-//                if (!maskerService.isMaskingEnabled) {
-////                    logger.warn("Masking is disabled - cleared highlights only")
-//                    return
-//                }
                 logger.warn("Document changed: ${event.document.textLength} chars")
                 maskerService.maskSensitiveData(editor)
             }

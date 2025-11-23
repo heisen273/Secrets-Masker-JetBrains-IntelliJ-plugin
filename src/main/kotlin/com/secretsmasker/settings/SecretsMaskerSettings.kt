@@ -1,5 +1,6 @@
 package com.secretsmasker.settings
 
+import com.intellij.ide.ui.UISettings
 import com.intellij.openapi.components.*
 import com.intellij.util.xmlb.XmlSerializerUtil
 import java.awt.Color
@@ -29,5 +30,9 @@ class SecretsMaskerSettings : PersistentStateComponent<SecretsMaskerSettings> {
         fun getInstance(): SecretsMaskerSettings {
             return service<SecretsMaskerSettings>()
         }
+    }
+
+    public fun isSubpixelAAEnabled(): Boolean {
+        return UISettings.getInstance().ideAAType.name.equals("SUBPIXEL", ignoreCase = true)
     }
 }

@@ -1,5 +1,6 @@
 package com.secretsmasker.settings
 
+import com.intellij.ide.ui.UISettings
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.ApplicationManager
 import com.secretsmasker.SecretsMaskerService
@@ -24,6 +25,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 //import com.intellij.openapi.editor.highlighter.EditorHighlighter
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.ui.JBColor
 
 
 class SecretsMaskerConfigurable : Configurable {
@@ -76,6 +78,18 @@ class SecretsMaskerConfigurable : Configurable {
         val settingsPanel = JPanel()
         settingsPanel.layout = BoxLayout(settingsPanel, BoxLayout.Y_AXIS)
         settingsPanel.border = EmptyBorder(0, 0, 0, 0)
+
+        // Check for subpixel antialiasing & show warning if enabled.
+        if (currentSettings.isSubpixelAAEnabled()) {
+            val warningLabel = JLabel(
+                "<html><div style='white-space: nowrap;'><b>⚠️ Issue detected:</b> Subpixel anti-aliasing is enabled. <br>" +
+                "To fix change it using: Settings → Appearance → Anti-aliasing → change to 'Greyscale'</div></html>"
+            )
+            warningLabel.foreground = JBColor.RED
+            settingsPanel.add(warningLabel)
+            settingsPanel.add(Box.createVerticalStrut(10))  // Add some spacing after warning
+
+        }
 
         // Option 1: Hide only values checkbox
         hideOnlyValuesCheckBox = JCheckBox("Hide only values after patterns").apply {

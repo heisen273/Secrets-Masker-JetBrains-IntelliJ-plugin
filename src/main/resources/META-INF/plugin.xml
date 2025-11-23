@@ -76,9 +76,8 @@
     <change-notes>
         <![CDATA[
           <ul>
-            <li>New button to toggle masking</li>
-            <li>Warn before showing setting</li>
-            <li>Settings docs updated</li>
+            <li>Windows: warn users about issue with antialiasing </li>
+            <li>Minor bug fixes</li>
           </ul>
         ]]>
     </change-notes>

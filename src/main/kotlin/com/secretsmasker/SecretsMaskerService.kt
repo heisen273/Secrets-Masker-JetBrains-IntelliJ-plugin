@@ -1,5 +1,11 @@
 package com.secretsmasker
 
+import com.intellij.ide.ui.UISettings
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.notification.NotificationAction
+import com.intellij.openapi.options.ShowSettingsUtil
 import com.secretsmasker.settings.SecretsMaskerSettings
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
@@ -29,6 +35,35 @@ class SecretsMaskerService {
         return isMaskingEnabled
     }
 
+    private fun showAntiAliasingWarning(project: com.intellij.openapi.project.Project?, settings: SecretsMaskerSettings) {
+
+        if (!settings.isSubpixelAAEnabled()) {
+            return
+        }
+
+        val notification = Notification(
+            "Secrets Masker",  // Group ID (can be anything for ad-hoc notifications)
+            "Secrets Masker: issue detected",
+            "Incompatible anti-aliasing. To fix: Appearance → Anti-aliasing → change to 'Greyscale'",
+            NotificationType.WARNING
+        )
+
+
+        // Add action to open settings directly
+        notification.addAction(object : NotificationAction("Open settings") {
+        override fun actionPerformed(e: AnActionEvent, notification: Notification) {
+            ShowSettingsUtil.getInstance().showSettingsDialog(
+                project,
+                "Appearance"
+            )
+            notification.expire()
+        }
+    })
+
+        notification.notify(project)
+    }
+
+
     fun maskSensitiveData(editor: Editor, settings: SecretsMaskerSettings? = null) {
         logger.warn("Attempting to mask sensitive data in editor: ${editor.document.textLength} chars")
 
@@ -39,13 +74,15 @@ class SecretsMaskerService {
             logger.warn("Masking is disabled - cleared highlights only")
             return
         }
+        // Get settings
+        val settings = settings ?: SecretsMaskerSettings.getInstance()
+
+        showAntiAliasingWarning(editor.project, settings)
 
         val document = editor.document
         val text = document.text
         var totalMatchCount = 0
 
-        // Get settings
-        val settings = settings ?: SecretsMaskerSettings.getInstance()
 
         // Apply each pattern
         for (patternStr in settings.patterns) {
@@ -64,19 +101,19 @@ class SecretsMaskerService {
                         Pair(start, end)
                     }
 
-                    val matchedText = text.substring(highlightStart, highlightEnd)
-                    logger.warn("Found sensitive data: '$matchedText' at [$highlightStart, $highlightEnd]")
-
-//                    editor.colorsScheme.defaultBackground
-                    var color = Color(settings.highlightColor)
-
-                    if (settings.invisibleHighlight){
-                        color = editor.colorsScheme.defaultBackground
-                    }
+//                    val matchedText = text.substring(highlightStart, highlightEnd)
+                    logger.warn("Found sensitive data at [$highlightStart, $highlightEnd]")
 
                     val attributes = TextAttributes().apply {
+                        val color = if (settings.invisibleHighlight) {
+                            editor.colorsScheme.defaultBackground
+                        } else {
+                            Color(settings.highlightColor)
+                        }
                         backgroundColor = color
                         foregroundColor = color
+                        effectColor = null
+                        effectType = null
                     }
 
                     highlighter.addRangeHighlighter(

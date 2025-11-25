@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com"
-version = "1.0.8"
+version = "1.0.81"
 
 tasks {
     withType<JavaCompile> {
@@ -40,7 +40,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     intellijPlatform {
 
-        local("/Applications/PyCharm CE 2.app")
+//        local("/Applications/PyCharm CE 2.app")
         local("/Applications/PyCharm.app")
 //        val type = "IC"
 //        val version = "2024.3.0"

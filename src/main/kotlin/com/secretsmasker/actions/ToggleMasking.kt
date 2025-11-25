@@ -51,6 +51,9 @@ class ToggleMasking : ToggleAction() {
                 return
             }
         }
+        if (settings.isSubpixelAAEnabled()) {
+            maskerService.showAntiAliasingPopupWarning(project)
+        }
 
         // Toggle the masking state
         maskerService.toggleMasking()

@@ -32,7 +32,14 @@ class SecretsMaskerSettings : PersistentStateComponent<SecretsMaskerSettings> {
         }
     }
 
-    public fun isSubpixelAAEnabled(): Boolean {
+    /**
+     * Checks if the IDE's antialiasing type is set to `SUBPIXEL`.
+     * Normally happens by default on Windows(maybe there's some pattern - like machines with LCD screens).
+     * `GREYSCALE` anti-aliasing is required for proper functioning of the masking feature.
+     *
+     * @return `true` if SUBPIXEL antialiasing is enabled, `false` otherwise.
+     */
+    fun isSubpixelAAEnabled(): Boolean {
         return UISettings.getInstance().ideAAType.name.equals("SUBPIXEL", ignoreCase = true)
     }
 }

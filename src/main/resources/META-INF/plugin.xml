@@ -76,8 +76,8 @@
     <change-notes>
         <![CDATA[
           <ul>
-            <li>Windows: warn users about issue with antialiasing </li>
-            <li>Minor bug fixes</li>
+            <li>Windows: re-work antialiasing warning</li>
+            <li>Minor improvements</li>
           </ul>
         ]]>
     </change-notes>

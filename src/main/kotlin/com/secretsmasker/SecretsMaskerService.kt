@@ -1,11 +1,11 @@
 package com.secretsmasker
 
-import com.intellij.ide.ui.UISettings
-import com.intellij.notification.Notification
-import com.intellij.notification.NotificationType
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.notification.NotificationAction
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notification
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.options.ShowSettingsUtil
+import com.intellij.openapi.ui.Messages
 import com.secretsmasker.settings.SecretsMaskerSettings
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
@@ -13,9 +13,11 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.markup.HighlighterLayer
 import com.intellij.openapi.editor.markup.HighlighterTargetArea
 import com.intellij.openapi.editor.markup.TextAttributes
+import com.secretsmasker.actions.ToggleMasking
 import java.awt.Color
 import java.util.regex.Pattern
 import java.util.regex.Matcher
+
 
 
 @Service
@@ -35,12 +37,50 @@ class SecretsMaskerService {
         return isMaskingEnabled
     }
 
-    private fun showAntiAliasingWarning(project: com.intellij.openapi.project.Project?, settings: SecretsMaskerSettings) {
+    fun showAntiAliasingPopupWarningAndNotification(project: com.intellij.openapi.project.Project?) {
+        showAntiAliasingPopupWarning(project)
+        showAntiAliasingNotification(project)
+    }
 
-        if (!settings.isSubpixelAAEnabled()) {
-            return
+    fun showAntiAliasingPopupWarning(project: com.intellij.openapi.project.Project?) {
+
+        // Use invokeLater to show dialog outside write action
+        com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+            val options = arrayOf("Open Settings", "Disable Masking")
+
+            val result = Messages.showDialog(
+                project,
+                "Incompatible anti-aliasing \n\nTo fix: Settings → Appearance → Anti-aliasing → change to 'Greyscale'",
+                "Secrets Masker Issue Detected",
+                options,
+                0, // default button index (Open Settings)
+                Messages.getWarningIcon()
+            )
+
+            when (result) {
+                0 -> { // Open Settings
+                    ShowSettingsUtil.getInstance().showSettingsDialog(
+                        project,
+                        "Appearance"
+                    )
+                }
+                1 -> { // Disable Masking
+                    if (isMaskingEnabled) {
+
+                        toggleMasking()
+                        // Refresh all editors to remove masking
+                        val editors = com.intellij.openapi.editor.EditorFactory.getInstance().allEditors
+                        for (editor in editors) {
+                            maskSensitiveData(editor)
+                        }
+                    }
+                }
+            }
         }
 
+    }
+
+    fun showAntiAliasingNotification(project: com.intellij.openapi.project.Project?) {
         val notification = Notification(
             "Secrets Masker",  // Group ID (can be anything for ad-hoc notifications)
             "Secrets Masker: issue detected",
@@ -48,6 +88,13 @@ class SecretsMaskerService {
             NotificationType.WARNING
         )
 
+        // Add action to disable masking
+        notification.addAction(object : NotificationAction("Disable masking") {
+            override fun actionPerformed(e: AnActionEvent, notification: Notification) {
+                ToggleMasking().setSelected(e, false)
+                notification.expire()
+            }
+        })
 
         // Add action to open settings directly
         notification.addAction(object : NotificationAction("Open settings") {
@@ -56,13 +103,12 @@ class SecretsMaskerService {
                 project,
                 "Appearance"
             )
-            notification.expire()
-        }
-    })
+            notification.expire()}
+            }
+        )
 
         notification.notify(project)
     }
-
 
     fun maskSensitiveData(editor: Editor, settings: SecretsMaskerSettings? = null) {
         logger.warn("Attempting to mask sensitive data in editor: ${editor.document.textLength} chars")
@@ -74,10 +120,13 @@ class SecretsMaskerService {
             logger.warn("Masking is disabled - cleared highlights only")
             return
         }
+
         // Get settings
         val settings = settings ?: SecretsMaskerSettings.getInstance()
 
-        showAntiAliasingWarning(editor.project, settings)
+        if (settings.isSubpixelAAEnabled()){
+            showAntiAliasingNotification(editor.project)
+        }
 
         val document = editor.document
         val text = document.text
@@ -101,7 +150,6 @@ class SecretsMaskerService {
                         Pair(start, end)
                     }
 
-//                    val matchedText = text.substring(highlightStart, highlightEnd)
                     logger.warn("Found sensitive data at [$highlightStart, $highlightEnd]")
 
                     val attributes = TextAttributes().apply {

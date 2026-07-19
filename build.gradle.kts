@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com"
-version = "1.0.81"
+version = "1.0.821"
 
 tasks {
     withType<JavaCompile> {

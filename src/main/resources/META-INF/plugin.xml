@@ -76,8 +76,7 @@
     <change-notes>
         <![CDATA[
           <ul>
-            <li>Windows: re-work antialiasing warning</li>
-            <li>Minor improvements</li>
+            <li>Version compatibiltiy coverage</li>
           </ul>
         ]]>
     </change-notes>
